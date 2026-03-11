@@ -17,7 +17,7 @@ import os
 load_dotenv()
 
 # --- Config ---
-USERNAME = os.getenv("MEDICOVER_USERNAME", "")
+CARD_NUMBER = os.getenv("MEDICOVER_CARD_NUMBER", "")
 PASSWORD = os.getenv("MEDICOVER_PASSWORD", "")
 REGION_ID = int(os.getenv("REGION_ID", "204"))
 SPECIALTY_ID = int(os.getenv("SPECIALTY_ID", "9"))
@@ -54,7 +54,7 @@ def authenticate() -> tuple:
     for attempt in range(1, MAX_REAUTH_ATTEMPTS + 1):
         try:
             print(f"Authenticating (attempt {attempt}/{MAX_REAUTH_ATTEMPTS})...")
-            session, headers = auth.login(USERNAME, PASSWORD)
+            session, headers = auth.login(CARD_NUMBER, PASSWORD)
             token_prefix = headers.get("Authorization", "")[:30]
             print(f"Authenticated: {token_prefix}...")
             return session, headers
@@ -125,8 +125,8 @@ def handle_slots(session, headers, new_slots: list[dict]):
 
 
 def main():
-    if not USERNAME or not PASSWORD:
-        print("Error: MEDICOVER_USERNAME and MEDICOVER_PASSWORD must be set in .env")
+    if not CARD_NUMBER or not PASSWORD:
+        print("Error: MEDICOVER_CARD_NUMBER and MEDICOVER_PASSWORD must be set in .env")
         sys.exit(1)
 
     session, headers = authenticate()

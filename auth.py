@@ -91,7 +91,7 @@ def _skip_mfa_gate(session: requests.Session, headers: dict, mfa_path: str) -> s
     return resp.headers.get("Location")
 
 
-def login(username: str, password: str) -> tuple[requests.Session, dict]:
+def login(card_number: str, password: str) -> tuple[requests.Session, dict]:
     """
     Perform synchronous OAuth2 PKCE login against Medicover.
     Returns (session, headers) where headers["Authorization"] = "Bearer <token>".
@@ -142,7 +142,7 @@ def login(username: str, password: str) -> tuple[requests.Session, dict]:
     login_data = {
         "Input.ReturnUrl": f"/connect/authorize/callback{auth_params}",
         "Input.LoginType": "FullLogin",
-        "Input.Username": username,
+        "Input.CardNumber": card_number,
         "Input.Password": password,
         "Input.Button": "login",
         "Input.IsSimpleAccessRegulationAccepted": "true",
