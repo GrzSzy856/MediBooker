@@ -138,19 +138,31 @@ def login(card_number: str, password: str) -> tuple[requests.Session, dict]:
         raise LoginError("CSRF token not found in login form")
     csrf_token = csrf_input.get("value")
 
+    return_url_input = soup.find("input", {"name": "Input.ReturnUrl"})
+    return_url = return_url_input.get("value") if return_url_input else f"/connect/authorize/callback{auth_params}"
+
+    form = soup.find("form")
+    form_action = urljoin(login_url, form.get("action")) if form and form.get("action") else next_url
+
     # Step 3: Submit credentials
     login_data = {
-        "Input.ReturnUrl": f"/connect/authorize/callback{auth_params}",
+        "Input.ReturnUrl": return_url,
         "Input.LoginType": "FullLogin",
-        "Input.CardNumber": card_number,
+        "Input.Username": card_number,
         "Input.Password": password,
         "Input.Button": "login",
         "Input.IsSimpleAccessRegulationAccepted": "true",
         "__RequestVerificationToken": csrf_token,
     }
-    resp = session.post(next_url, data=login_data, headers=headers, allow_redirects=False)
+    post_headers = {
+        **headers,
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Origin": "https://login-online24.medicover.pl",
+        "Referer": next_url,
+    }
+    resp = session.post(form_action, data=login_data, headers=post_headers, allow_redirects=False)
     if "INVALID_CREDENTIALS" in resp.text or resp.status_code != 302:
-        raise LoginError("Invalid credentials")
+        raise LoginError(f"Login failed (HTTP {resp.status_code})")
 
     next_url = resp.headers.get("Location")
     if not next_url:
