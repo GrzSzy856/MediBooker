@@ -58,13 +58,16 @@ All settings are read from the `.env` file (or from real environment variables �
 | `MEDICOVER_PASSWORD`   | Yes      | —             | Your Medicover account password                                  |
 | `REGION_ID`            | Yes      | `204`         | Region to search in (see [Finding IDs](#finding-ids))            |
 | `SPECIALTY_ID`         | Yes      | `9`           | Medical specialty to search for                                  |
-| `START_DATE`           | Yes      | `2025-04-01`  | Earliest acceptable appointment date (`YYYY-MM-DD`)              |
+| `START_DATE`           | No       | —             | Earliest acceptable appointment date (`YYYY-MM-DD`); no limit if blank |
+| `END_DATE`             | No       | —             | Latest acceptable appointment date (`YYYY-MM-DD`); no limit if blank |
 | `TELEGRAM_ENABLED`     | No       | `true`        | Set to `false` to disable Telegram notifications entirely        |
 | `TELEGRAM_TOKEN`       | No       | —             | Telegram bot token                                               |
 | `TELEGRAM_CHAT_ID`     | No       | —             | Your Telegram chat ID                                            |
 | `AUTO_BOOK`            | No       | `false`       | Set to `true` to automatically book the first free slot found    |
 | `POLL`                 | No       | `false`       | Set to `true` to run in continuous polling mode                  |
 | `POLL_INTERVAL_SEC`    | No       | `300`         | Seconds between polls (only used when `POLL=true`)               |
+| `APPOINTMENT_TIME_RANGE` | No     | —             | Hour range filter, e.g. `16-24` (only slots from 16:00 to 23:59) |
+| `DOCTOR_NAME`          | No       | —             | Partial doctor name filter, e.g. `Nowak` (case-insensitive)      |
 
 ### Example `.env`
 
@@ -81,6 +84,12 @@ START_DATE=2025-04-01
 # Telegram notifications (optional but recommended)
 TELEGRAM_TOKEN=123456:ABC-xyz...
 TELEGRAM_CHAT_ID=123456789
+
+# Optional filters (leave blank to disable)
+# APPOINTMENT_TIME_RANGE: e.g. 16-24 (only slots from 16:00 to 23:59)
+APPOINTMENT_TIME_RANGE=16-24
+# DOCTOR_NAME: partial match, case-insensitive
+DOCTOR_NAME=Nowak
 
 # Auto-book first free slot (default: false)
 # WARNING: booking happens without any confirmation prompt

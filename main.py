@@ -21,13 +21,16 @@ CARD_NUMBER = os.getenv("MEDICOVER_CARD_NUMBER", "")
 PASSWORD = os.getenv("MEDICOVER_PASSWORD", "")
 REGION_ID = int(os.getenv("REGION_ID", "204"))
 SPECIALTY_ID = int(os.getenv("SPECIALTY_ID", "9"))
-START_DATE = os.getenv("START_DATE", "2025-04-01")
+START_DATE = os.getenv("START_DATE", "").split("#")[0].strip()      # e.g. "2025-04-01"
+END_DATE = os.getenv("END_DATE", "").split("#")[0].strip()          # e.g. "2025-05-01"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 TELEGRAM_ENABLED = os.getenv("TELEGRAM_ENABLED", "true").lower() == "true"
 AUTO_BOOK = os.getenv("AUTO_BOOK", "false").lower() == "true"
 POLL = os.getenv("POLL", "false").lower() == "true"
 POLL_INTERVAL_SEC = int(os.getenv("POLL_INTERVAL_SEC", "300"))
+APPOINTMENT_TIME_RANGE = os.getenv("APPOINTMENT_TIME_RANGE", "")   # e.g. "16-24"
+DOCTOR_NAME = os.getenv("DOCTOR_NAME", "").strip()                  # e.g. "Adam Nowak"
 
 MAX_REAUTH_ATTEMPTS = 7
 REAUTH_WAIT_SEC = 30
@@ -48,6 +51,26 @@ def _format_slot(slot: dict) -> str:
     specialty = slot.get("specialty", {}).get("name", "?")
     date = slot.get("appointmentDate", "?")
     return f"  • {date} | {specialty} | {doctor} | {clinic}"
+
+
+def _apply_filters(slots: list) -> list:
+    result = slots
+    if APPOINTMENT_TIME_RANGE:
+        start_h, end_h = (int(x) for x in APPOINTMENT_TIME_RANGE.split("-"))
+        def in_range(slot):
+            dt_str = slot.get("appointmentDate", "")
+            try:
+                hour = int(dt_str[11:13])  # "2025-04-15T16:30:00" → 16
+                return start_h <= hour < end_h
+            except (ValueError, IndexError):
+                return True
+        result = [s for s in result if in_range(s)]
+    if END_DATE:
+        result = [s for s in result if s.get("appointmentDate", "")[:10] <= END_DATE]
+    if DOCTOR_NAME:
+        name_lower = DOCTOR_NAME.lower()
+        result = [s for s in result if name_lower in s.get("doctor", {}).get("name", "").lower()]
+    return result
 
 
 def authenticate() -> tuple:
@@ -88,7 +111,7 @@ def search_and_handle(session, headers, seen_ids: set) -> tuple[list[dict], set]
             print(f"  [!] Search error: {e}")
             return [], seen_ids
 
-    new_slots = [s for s in slots if _slot_id(s) not in seen_ids]
+    new_slots = _apply_filters([s for s in slots if _slot_id(s) not in seen_ids])
     new_seen = seen_ids | {_slot_id(s) for s in slots}
     return new_slots, new_seen
 

@@ -28,12 +28,13 @@ def find_appointments(
     params = {
         "RegionIds": region_id,
         "SpecialtyIds": specialty_id,
-        "StartTime": start_date,
         "Page": 1,
         "PageSize": 100,
         "SlotSearchType": "Standard",
         "VisitType": "Center",
     }
+    if start_date:
+        params["StartTime"] = start_date
     resp = session.get(SLOTS_URL, headers=headers, params=params)
     if resp.status_code == 401:
         raise PermissionError("401 — token expired, re-authenticate")
