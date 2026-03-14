@@ -170,7 +170,7 @@ def main():
         while True:
             cycle += 1
             print(f"\n[Cycle {cycle}] {time.strftime('%Y-%m-%d %H:%M:%S')} — searching...")
-            new_slots, seen_ids = search_and_handle(session, headers, seen_ids)
+            new_slots, _ = search_and_handle(session, headers, set())
             handle_slots(session, headers, new_slots)
             print(f"  Sleeping {POLL_INTERVAL_SEC}s...")
             time.sleep(POLL_INTERVAL_SEC)
