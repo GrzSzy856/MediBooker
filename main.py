@@ -24,6 +24,7 @@ SPECIALTY_ID = int(os.getenv("SPECIALTY_ID", "9"))
 START_DATE = os.getenv("START_DATE", "2025-04-01")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+TELEGRAM_ENABLED = os.getenv("TELEGRAM_ENABLED", "true").lower() == "true"
 AUTO_BOOK = os.getenv("AUTO_BOOK", "false").lower() == "true"
 POLL = os.getenv("POLL", "false").lower() == "true"
 POLL_INTERVAL_SEC = int(os.getenv("POLL_INTERVAL_SEC", "300"))
@@ -104,7 +105,8 @@ def handle_slots(session, headers, new_slots: list[dict]):
         print(line)
 
     msg = f"<b>MediBooker — {len(new_slots)} new slot(s) found</b>\n" + "\n".join(lines)
-    notify.send(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, msg)
+    if TELEGRAM_ENABLED:
+        notify.send(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, msg)
 
     if AUTO_BOOK:
         slot = new_slots[0]
@@ -119,7 +121,8 @@ def handle_slots(session, headers, new_slots: list[dict]):
         if success:
             booked_msg = f"Booked appointment:\n{_format_slot(slot)}"
             print(f"  Booking confirmed!")
-            notify.send(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, f"<b>Booked!</b>\n{_format_slot(slot)}")
+            if TELEGRAM_ENABLED:
+                notify.send(TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, f"<b>Booked!</b>\n{_format_slot(slot)}")
         else:
             print("  Booking failed or not free.")
 
